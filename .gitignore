@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Env / secretos
+.env
+.env.*
+!.env.example
+/src/pdf/data/cv.pdf
+
+# Build outputs
+dist/
+build/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
