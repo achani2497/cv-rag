@@ -5,39 +5,41 @@ import { cleanStopWords } from '@/utils/cleanStopWords.js';
 import { cleanText } from '@/utils/cleanText.js';
 import { getTopKSimilarities } from '../rag/cosine.js';
 
-function sintaxSimilarityScore(query: string[], text: string[]): number {
-  const commonWords = query.filter((word) => text.includes(word));
-  return commonWords.length / query.length;
-}
-
-function decision(syntaxScore: number, maxSimilarity: number): Route {
-  if (syntaxScore === 0 && maxSimilarity < 0.55) {
-    return 'LOW';
-  } else if (maxSimilarity >= 0.62) {
-    return 'HIGH';
-  } else if (syntaxScore > 0.6 && maxSimilarity >= 0.55) {
-    return 'HIGH';
-  } else {
-    return 'MEDIUM';
+export class Router {
+  private sintaxSimilarityScore(query: string[], text: string[]): number {
+    const commonWords = query.filter((word) => text.includes(word));
+    return commonWords.length / query.length;
   }
-}
 
-export async function route(
-  query: string,
-  indexedChunks: IndexedChunk[],
-  originalText: string,
-): Promise<Route> {
-  const normalizedQuery = cleanText(query);
-  const embeddedQuery = await embedText(normalizedQuery);
-  const similarities = getTopKSimilarities(embeddedQuery, indexedChunks);
-  const maxSimilarity = similarities[0]?.score ?? 0;
+  private decision(syntaxScore: number, maxSimilarity: number): Route {
+    if (syntaxScore === 0 && maxSimilarity < 0.55) {
+      return 'LOW';
+    } else if (maxSimilarity >= 0.62) {
+      return 'HIGH';
+    } else if (syntaxScore > 0.6 && maxSimilarity >= 0.55) {
+      return 'HIGH';
+    } else {
+      return 'MEDIUM';
+    }
+  }
 
-  const cleanQuery = cleanStopWords(normalizedQuery);
-  const originalTextNormalized = cleanStopWords(cleanText(originalText));
-  const syntaxScore = sintaxSimilarityScore(cleanQuery, originalTextNormalized);
+  public async getQuestionScore(
+    query: string,
+    indexedChunks: IndexedChunk[],
+    originalText: string,
+  ): Promise<Route> {
+    const normalizedQuery = cleanText(query);
+    const embeddedQuery = await embedText(normalizedQuery);
+    const similarities = getTopKSimilarities(embeddedQuery, indexedChunks);
+    const maxSimilarity = similarities[0]?.score ?? 0;
 
-  console.log(query);
-  console.log('syntaxScore: ', syntaxScore);
-  console.log('maxSimilarity: ', maxSimilarity);
-  return decision(syntaxScore, maxSimilarity);
+    const cleanQuery = cleanStopWords(normalizedQuery);
+    const originalTextNormalized = cleanStopWords(cleanText(originalText));
+    const syntaxScore = this.sintaxSimilarityScore(cleanQuery, originalTextNormalized);
+
+    console.log(query);
+    console.log('syntaxScore: ', syntaxScore);
+    console.log('maxSimilarity: ', maxSimilarity);
+    return this.decision(syntaxScore, maxSimilarity);
+  }
 }
