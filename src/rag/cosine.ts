@@ -26,7 +26,7 @@ export function getTopKSimilarities(query: number[], chunks: IndexedChunk[]) {
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, Number(process.env.TOP_K))
     .map((similarity) => ({
-      // text: similarity.chunk.text,
+      text: similarity.chunk.text,
       score: similarity.similarity,
     }));
 }
