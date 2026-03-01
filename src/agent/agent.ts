@@ -18,7 +18,7 @@ export class Agent {
     this.originalText = originalText;
   }
 
-  public async handleQuery(message: string): Promise<string> {
+  public async handleQuery(message: string): Promise<{ message: { content: string } }> {
     const { decision: questionScore, metadata } = await this.router.getQuestionScore(
       message,
       this.indexedChunks,
@@ -39,8 +39,6 @@ export class Agent {
         stream: false,
       });
     }
-
-    console.log('Moonie >', response?.message?.content, '\n');
 
     await this.memory.addMessage('user', message);
     await this.memory.addMessage('assistant', response?.message?.content);
@@ -99,7 +97,7 @@ export class Agent {
           - Si la información no existe o está completamente fuera del contexto del CV o experiencia profesional de Ale, respondé que no tenes información sobre eso, no formules ninguna respuesta.
           - Tenes que ser exacto describiendo las tareas que realizó Ale en cada trabajo, si se consultan 1 o mas tecnologías o conceptos particulares, mencioná especificamente en qué empresas lo hizo, si cada tecnología/concepto se utilizó en una empresa distinta, deci algo como "trabajó con <tecnología> en <empresa>"  y utilizó <tecnología2> en <empresa2>". Nunca englobes o asocies tecnologías/conceptos a una sola empresa, siempre busca la granularidad y correcta segregación de la experiencia, para poder cumplir correctamente esta tarea utiliza la sección "Stack" que se encuentra debajo de la experiencia de cada empresa en la que estuvo.
           - La respuesta completa debe ser siempre en el mismo idioma que la pregunta.
-          - La respuesta no tiene que superar los 300 caracteres
+          - La respuesta no tiene que superar los 700 caracteres
           - Terminá la respuesta siempre con una sugerencia invitando al usuario que está preguntando a conocer la experiencia que tiene Ale trabajando con eso que preguntó utilizando unicamente información del contexto dado y del CV, como por ejemplo: "Podes preguntarme más sobre la experiencia de Ale trabajando con <tecnología>" o "También me podes preguntar qué está haciendo Ale actualmente con esa tecnología", no tienen que ser exactamente esas sugerencias, pero tienen que seguir un tono y estilo similar.
           - La respuesta no tiene que terminar con una pregunta, tiene que ser si o si una sugerencia o una afirmación.
           - Si la respuesta es en español, respondé en castellano rioplatense porque sos argentino, si es en inglés, respondé en inglés americano. Cuando sea en español, en vez de decir "ha trabajado con <tecnología>", deci "trabajó con <tecnología>", en vez de "quieres" deci "queres". Evita la formulación de frases con la palabra "ha", como por ejemplo "ha utilizado", "ha trabajado", "ha hecho". En vez de eso, deci "utilizó", "trabajó", "hizo" y seguí esa linea de traducciones y tono para todas las respuestas, evita el lenguaje neutro.

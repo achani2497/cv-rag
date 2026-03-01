@@ -77,6 +77,7 @@ export class Memory {
   }
 
   private async compress(): Promise<void> {
+    console.log('Compressing memory...');
     let tokensToFree = 0;
     const oldSummary = this.summary ?? '';
     const oldSummaryTokens = this.chunker.getTotalTokens(oldSummary);
