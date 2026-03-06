@@ -1,19 +1,8 @@
+import { env } from '@/config/env.js';
 import { Chunker } from '@/rag/chunker.js';
 import { postFetch } from '@/shared/axiosWrapper/invoker.js';
 import type { Message, MessageRole } from '@/types/message.js';
-import { config as loadEnv } from 'dotenv';
-loadEnv();
-
-const sumarizePrompt = [
-  'Resumí la siguiente conversación manteniendo:',
-  'Tecnologías mencionadas',
-  'Experiencia laboral/profesional discutida',
-  'Preguntas pendientes',
-  'Decisiones tomadas',
-  'Preferencias del usuario',
-  'Contexto necesario para continuar la conversación',
-  'El resumen debe ser claro, conciso y no superar 300 tokens.',
-].join('\n');
+import { sumarizePrompt } from '@/utils/prompts.js';
 
 export class Memory {
   private summary: string | null = null;
@@ -45,8 +34,7 @@ export class Memory {
 
   public shouldCompress() {
     return (
-      this.messages.length > Number(process.env.RAW_MESSAGES_LIMIT) ||
-      this.totalTokens > Number(process.env.MEMORY_TOKEN_LIMIT)
+      this.messages.length > env.RAW_MESSAGES_LIMIT || this.totalTokens > env.MEMORY_TOKEN_LIMIT
     );
   }
 
@@ -112,23 +100,27 @@ export class Memory {
   ): Promise<{ rawSummary: string; rawSummaryTokens: number }> {
     let conversationToSummarize = this.getSummarizedMessages(messagesToSumarize, oldSummary);
 
-    let response = await postFetch<any>(`${process.env.MODEL_URL}/chat`, {
-      model: 'deepseek-r1:8b',
+    let response = await postFetch<any>(`${env.MODEL_URL}/chat`, {
+      model: env.MODEL_NAME,
       messages: [
         { role: 'system', content: sumarizePrompt },
         { role: 'user', content: conversationToSummarize },
       ],
+      stream: false,
     });
 
-    if (!response?.choices?.[0]?.message?.content) return { rawSummary: '', rawSummaryTokens: 0 };
+    const content = response?.message?.content;
 
-    let rawSummary: string =
-      'Resumen de conversación previa: ' + response.choices[0].message.content;
+    if (!content) return { rawSummary: '', rawSummaryTokens: 0 };
+
+    let rawSummary: string = 'Resumen de conversación previa: ' + content;
 
     let rawSummaryTokens = this.chunker.getTotalTokens(rawSummary);
-    if (rawSummaryTokens > 300) {
+
+    // Si el resumen supera el limite de tokens establecido para el resumen, lo trunco
+    if (rawSummaryTokens > env.SUMMARY_TOKEN_LIMIT) {
       const newSummaryTokens = this.chunker.tokenizeText(rawSummary);
-      rawSummary = this.chunker.detokenizeText(newSummaryTokens.slice(0, 300));
+      rawSummary = this.chunker.detokenizeText(newSummaryTokens.slice(0, env.SUMMARY_TOKEN_LIMIT));
       rawSummaryTokens = this.chunker.getTotalTokens(rawSummary);
     }
 

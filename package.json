@@ -20,6 +20,7 @@
     "dotenv": "^17.3.1",
     "js-tiktoken": "^1.0.21",
     "mammoth": "^1.11.0",
+    "ora": "^9.3.0",
     "pdf-parse": "^2.4.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"

@@ -1,11 +1,9 @@
 import { embedText } from '@/rag/embedder.js';
 import type { EmbeddedText } from '@/types/embeddedChunk.js';
 import type { IndexedChunk } from '@/types/indexedChunk.js';
-import { config as loadEnv } from 'dotenv';
+import { env } from '@/config/env.js';
 import { Tiktoken } from 'js-tiktoken';
 import cl100k_base from 'js-tiktoken/ranks/cl100k_base';
-
-loadEnv();
 
 export class Chunker {
   private encoder: Tiktoken;
@@ -33,9 +31,9 @@ export class Chunker {
     const chunks = [];
     let chunkPivot = 0;
     while (chunkPivot < totalTokens) {
-      const chunk = tokens.slice(chunkPivot, chunkPivot + Number(process.env.CHUNK_SIZE));
+      const chunk = tokens.slice(chunkPivot, chunkPivot + env.CHUNK_SIZE);
       chunks.push(this.encoder.decode(chunk));
-      chunkPivot += Number(process.env.CHUNK_SIZE) - Number(process.env.CHUNK_OVERLAP);
+      chunkPivot += env.CHUNK_SIZE - env.CHUNK_OVERLAP;
     }
 
     return chunks;

@@ -1,3 +1,4 @@
+import { env } from '@/config/env.js';
 import type { IndexedChunk } from '@/types/indexedChunk.js';
 
 export function cosineSimilarity(a: number[], b: number[]): number {
@@ -24,7 +25,7 @@ export function getTopKSimilarities(query: number[], chunks: IndexedChunk[]) {
 
   return similarities
     .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, Number(process.env.TOP_K))
+    .slice(0, env.TOP_K)
     .map((similarity) => ({
       text: similarity.chunk.text,
       score: similarity.similarity,

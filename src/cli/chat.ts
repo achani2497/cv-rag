@@ -4,11 +4,7 @@ import { Chunker } from '@/rag/chunker.js';
 import chalk from 'chalk';
 import { stdin as input, stdout as output } from 'node:process';
 import readline from 'node:readline/promises';
-
-const userColor = chalk.greenBright;
-const moonieColor = chalk.cyanBright;
-const systemColor = chalk.gray;
-const errorColor = chalk.redBright;
+import { Spinner } from './spinner.js';
 
 export class Chat {
   public async start() {
@@ -44,6 +40,8 @@ export class Chat {
     const systemText = chalk.magentaBright;
     const errorText = chalk.redBright;
 
+    const spinner = new Spinner(mooniePrefix);
+
     console.log(
       systemText(
         '\n◉ Hola! Soy Moonie, la asistente personal profesional de Ale, podes preguntarme lo que quieras sobre su experiencia profesional y laboral!',
@@ -70,9 +68,15 @@ export class Chat {
           continue;
         }
 
-        console.log(mooniePrefix + systemText('💭 Pensando...\n'));
+        spinner.start();
+
+        spinner.searching();
 
         const response = await agent.handleQuery(trimmed);
+
+        spinner.generating();
+
+        spinner.stop();
 
         console.log(mooniePrefix + response?.message?.content + '\n');
       } catch (err: any) {
