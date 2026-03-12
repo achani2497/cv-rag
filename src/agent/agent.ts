@@ -19,7 +19,10 @@ export class Agent {
     this.originalText = originalText;
   }
 
-  public async handleQuery(message: string): Promise<{ message: { content: string } }> {
+  public async handleQuery(
+    message: string,
+    setSpinnerText: (text: string) => void,
+  ): Promise<{ message: { content: string } }> {
     const { decision: questionScore, metadata } = await this.router.getQuestionScore(
       message,
       this.indexedChunks,
@@ -32,6 +35,8 @@ export class Agent {
         message: { content: 'Esa consulta está fuera de mi alcance de conocimiento.' },
       };
     } else {
+      setSpinnerText('🔎 Buscando información relevante...');
+
       const prompt = this.getPrompt(questionScore, message, metadata.topKSimilarities);
 
       response = await postFetch<any>(`${env.MODEL_URL}/chat`, {
@@ -40,7 +45,7 @@ export class Agent {
         stream: false,
       });
     }
-
+    setSpinnerText('✍️ Generando respuesta...');
     await this.memory.addMessage('user', message);
     await this.memory.addMessage('assistant', response?.message?.content);
 

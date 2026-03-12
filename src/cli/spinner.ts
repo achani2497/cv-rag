@@ -10,20 +10,12 @@ export class Spinner {
     });
   }
 
+  setText(text: string) {
+    this.spinner.text = text;
+  }
+
   start() {
     this.spinner.start();
-  }
-
-  searching() {
-    this.spinner.text = '🔎 Buscando información relevante...';
-  }
-
-  reasoning() {
-    this.spinner.text = '🧠 Conectando ideas...';
-  }
-
-  generating() {
-    this.spinner.text = '✍️ Generando respuesta...';
   }
 
   stop() {

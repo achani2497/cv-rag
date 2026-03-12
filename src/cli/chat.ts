@@ -69,15 +69,8 @@ export class Chat {
         }
 
         spinner.start();
-
-        spinner.searching();
-
-        const response = await agent.handleQuery(trimmed);
-
-        spinner.generating();
-
+        const response = await agent.handleQuery(trimmed, (text) => spinner.setText(text));
         spinner.stop();
-
         console.log(mooniePrefix + response?.message?.content + '\n');
       } catch (err: any) {
         if (err?.code === 'ABORT_ERR') {
